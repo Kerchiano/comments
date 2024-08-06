@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -5,15 +6,6 @@ from django.core.cache import cache
 from comments_app.models import Comment
 
 User = get_user_model()
-
-
-class CaptchaSerializer(serializers.Serializer):
-    captcha_text = serializers.CharField(max_length=10, required=True, label="Captcha Text")
-
-    def validate_captcha_text(self, value):
-        if not cache.get(value):
-            raise serializers.ValidationError('Invalid captcha text')
-        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -26,10 +18,27 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['username', 'email', 'parent_id', 'home_page', 'captcha_text', 'text']
 
-    def validate_captcha_text(self, value):
-        if not cache.get(value):
-            raise serializers.ValidationError('Invalid captcha text')
-        return value
+    def validate(self, attrs):
+        username = attrs.get('username')
+        email = attrs.get('email')
+        captcha_text = attrs.get('captcha_text')
+
+        try:
+            user = User.objects.get(username=username)
+            if user.email != email:
+                raise serializers.ValidationError({
+                    'email': 'Wrong email for this username'
+                })
+            elif not cache.get(captcha_text):
+                raise serializers.ValidationError({'captcha_text': 'Invalid captcha text'})
+        except User.DoesNotExist:
+            if User.objects.filter(email=email).exists():
+                raise serializers.ValidationError({
+                    'email': 'Email already exists'
+                })
+            elif not cache.get(captcha_text):
+                raise serializers.ValidationError({'captcha_text': 'Invalid captcha text'})
+        return attrs
 
     def create(self, validated_data):
         username = validated_data.pop('username')
@@ -37,7 +46,13 @@ class CommentSerializer(serializers.ModelSerializer):
         captcha_text = validated_data.pop('captcha_text')
         parent_id = validated_data.pop('parent_id', None)
 
-        user, created = User.objects.get_or_create(username=username, defaults={'email': email})
+        try:
+            user, created = User.objects.get_or_create(username=username, defaults={'email': email})
+        except IntegrityError as e:
+            if 'email' in str(e):
+                raise serializers.ValidationError({"email": "Email already exists"})
+            else:
+                raise e
 
         if not created and user.email != email:
             user.email = email
@@ -63,16 +78,19 @@ class TitleCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['username', 'email', 'home_page', 'text', 'created_at']
+        fields = ['id', 'username', 'email', 'home_page', 'text', 'created_at']
+
+
+class RecursiveField(serializers.Serializer):
+    def to_representation(self, value):
+        serializer = self.parent.parent.__class__(value, context=self.context)
+        return serializer.data
 
 
 class CommentDetailSerializer(serializers.ModelSerializer):
-    replies = serializers.SerializerMethodField()
+    username = serializers.CharField(source='user.username', read_only=True)
+    replies = RecursiveField(many=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'home_page', 'text', 'created_at', 'replies']
-
-    def get_replies(self, obj):
-        replies = obj.replies.all()
-        return TitleCommentSerializer(replies, many=True).data
+        fields = ['id', 'username', 'user', 'home_page', 'text', 'created_at', 'replies']

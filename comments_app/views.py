@@ -1,9 +1,7 @@
 from django.core.cache import cache
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView, ListAPIView, RetrieveAPIView
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from comments_app.filters import CommentFilter

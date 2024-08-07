@@ -18,11 +18,12 @@ class CommentFilter(filters.FilterSet):
         fields = ['username', 'email', 'created_at']
 
     def filter_by_created_at(self, queryset, name, value):
-        if value == 'fifo':
-            return queryset.order_by('is_priority', 'created_at')
-        elif value == 'lifo':
-            return queryset.order_by('is_priority', '-created_at')
-        return queryset.order_by('is_priority', '-created_at')
+        order_by_fields = ['created_at'] if value == 'fifo' else ['-created_at']
+
+        if 'is_priority' in queryset.query.annotations:
+            order_by_fields.insert(0, 'is_priority')
+
+        return queryset.order_by(*order_by_fields)
 
     def filter_by_username(self, queryset, name, value):
         priority_queryset = queryset.annotate(

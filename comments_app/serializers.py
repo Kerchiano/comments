@@ -13,15 +13,27 @@ class CommentSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(write_only=True)
     captcha_text = serializers.CharField(write_only=True, required=False)
     parent_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    image = serializers.ImageField(required=False, allow_null=True)
+    file = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Comment
-        fields = ['username', 'email', 'parent_id', 'home_page', 'captcha_text', 'text']
+        fields = ['username', 'email', 'parent_id', 'home_page', 'captcha_text', 'text', 'image', 'file']
 
     def validate(self, attrs):
         username = attrs.get('username')
         email = attrs.get('email')
         captcha_text = attrs.get('captcha_text')
+        file = attrs.get('file')
+        image = attrs.get('image')
+
+        if str(image) != 'None' and str(image).split('.')[1] not in ['jpg', 'jpeg', 'png', 'gif']:
+            raise serializers.ValidationError({'image': 'The image not allowed extension'})
+
+        if file and file.size > 100 * 1024:
+            raise serializers.ValidationError({'file': 'The file size should not exceed 100KB.'})
+        elif str(file) != 'None' and str(file).split('.')[1] != 'txt':
+            raise serializers.ValidationError({'file': 'The file not txt extension'})
 
         try:
             user = User.objects.get(username=username)
@@ -45,14 +57,7 @@ class CommentSerializer(serializers.ModelSerializer):
         email = validated_data.pop('email')
         captcha_text = validated_data.pop('captcha_text')
         parent_id = validated_data.pop('parent_id', None)
-
-        try:
-            user, created = User.objects.get_or_create(username=username, defaults={'email': email})
-        except IntegrityError as e:
-            if 'email' in str(e):
-                raise serializers.ValidationError({"email": "Email already exists"})
-            else:
-                raise e
+        user, created = User.objects.get_or_create(username=username, defaults={'email': email})
 
         if not created and user.email != email:
             user.email = email

@@ -1,10 +1,8 @@
 from django.core.cache import cache
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from rest_framework.generics import CreateAPIView, GenericAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.views import APIView
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser
 
 from comments_app.filters import CommentFilter

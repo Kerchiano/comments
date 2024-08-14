@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_filters',
     "comments_app.apps.CommentsAppConfig",
     'corsheaders',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -193,4 +194,12 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
     'JTI_CLAIM': 'jti',
+}
+
+ASGI_APPLICATION = 'comments.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
 }

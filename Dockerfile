@@ -1,6 +1,7 @@
 # Используем официальный образ Python
 FROM python:3.11
 
+RUN pip install --upgrade pip setuptools wheel
 # Устанавливаем рабочую директорию
 WORKDIR /app
 

@@ -1,7 +1,8 @@
-# created by virtualenv automatically
 .venv
 */migrations/*
 .env
 .idea/
 __pycache__/
-.media
+media/
+static/
+staticfiles/

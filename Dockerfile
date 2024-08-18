@@ -1,24 +1,16 @@
-# Используем официальный образ Python
 FROM python:3.11
 
-RUN pip install --upgrade pip setuptools wheel
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файлы зависимостей
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN pip install --upgrade pip
+
 COPY requirements.txt /app/
 
-# Устанавливаем зависимости
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
-# Копируем остальные файлы проекта
+COPY fonts/arial.ttf /usr/share/fonts/truetype/arial.ttf
+
 COPY . /app/
-
-# Собираем статику
-RUN python manage.py collectstatic --noinput
-
-# Открываем порт для приложения
-EXPOSE 8000
-
-# Запускаем приложение
-CMD ["daphne", "-p", "8000", "comments.asgi:application"]

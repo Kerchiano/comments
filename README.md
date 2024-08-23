@@ -25,10 +25,15 @@ echo. > .env
 Add the following manually to the .env file:
 
 DB_NAME=comments
+
 DB_USER=postgres
+
 DB_PASSWORD=1234
+
 DB_HOST=db
+
 DB_PORT=5432
+
 SECRET_KEY=django-insecure-8%_9=y^b%^idigk=n_3w%35h&gvzithycrdq7lq*xdku#20rib
 
 Open the entrypoint.sh file in Notepad++ or VSCode and change line endings from CRLF to LF.

@@ -1,26 +1,26 @@
 Create a folder, then in Command Prompt (cmd), navigate to your folder C:\...\your_folder and run:
 
-git clone https://github.com/Kerchiano/comments.git
+`git clone https://github.com/Kerchiano/comments.git`
 
 After cloning, navigate to C:\...\your_folder\comments:
 
-cd comments
+`cd comments`
 
 Create a virtual environment:
 
-python -m venv venv
+`python -m venv venv`
 
 Activate the virtual environment:
 
-venv\Scripts\activate
+`venv\Scripts\activate`
 
 Install the required packages:
 
-pip install -r requirements.txt
+`pip install -r requirements.txt`
 
 Create the .env file:
 
-echo. > .env
+`echo. > .env`
 
 Add the following manually to the .env file:
 
@@ -40,6 +40,6 @@ Open the entrypoint.sh file in Notepad++ or VSCode and change line endings from 
 
 Run Docker Compose:
 
-docker-compose up
+`docker-compose up`
 
 Congratulations! Open your browser and go to http://127.0.0.1:8000/swagger/ to check the API endpoints.
